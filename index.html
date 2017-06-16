@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<head>
+<style>
+  body { background: #222; }
+    #video_player { 
+      display: table; line-height: 0;
+      font-size: 0; background: #000;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    #video_container { 
+      position: relative;
+    }
+    #video_player div, #video_player .fig { 
+      vertical-align: top; 
+    }
+    #video_container video { 
+      display: block;
+      width: 100%;
+      height: 100%;
+      top: 0;
+    }
+    #video_player .fig { display:flex;}
+    #video_player .fig a { display: block; }
+    #video_player .fig a { 
+      opacity: .5;
+      transition: 1s opacity; 
+    }
+    #video_player .fig a img, figure video { 
+      width: 100%; height: auto; 
+    }
+    #video_player .fig a.currentvid, #video_player .fig a:hover, #video_player .fig a:focus { opacity: 1; }
+
+    .theHref {
+      width:33.333333%;
+    }
+    @media (max-width: 700px) {
+
+      .theHref {
+        width:50%;
+      }
+
+      #video_container {  }
+      #video_player .fig a { 
+        display: inline-block; 
+
+      }
+    }
+
+    
+
+    .fig{
+      max-width:1000px;
+      flex-flow: row wrap;
+    }
+
+    header h1{
+      color:white;
+      text-align: center;
+    }
+</style>
+</head>
+<body>
+<header>
+  <h1>Client Videos</h1>
+</header>
+  <figure id="video_player">
+    <div id="video_container">
+    <video controls poster="http://thenewcode.com/assets/images/vid-glacier.jpg" playsinline>
+      <source src="http://thenewcode.com/assets/videos/glacier.mp4" type="video/mp4">
+      <source src="http://thenewcode.com/assets/videos/glacier.webm" type="video/webm">
+  </video>
+  </div>
+  <div class="fig">
+  </div>
+  </figure>
+</body>
+
+<script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js'></script>
+<script>
+
+function doit() {
+var video_player = document.getElementById("video_player");
+video = video_player.getElementsByTagName("video")[0],
+video_links = video_player.getElementsByClassName("fig")[0],
+source = video.getElementsByTagName("source"),
+link_list = [],
+vidDir = "http://thenewcode.com/assets/videos/",
+currentVid = 0,
+allLnks = video_links.getElementsByTagName("a"),
+lnkNum = allLnks.length;
+video.removeAttribute("controls");
+video.removeAttribute("poster");
+
+//video.addEventListener('click', () => { video.play(); })
+
+
+  function playVid(index) {
+   video_links.children[index].classList.add("currentvid");
+      source[1].src = vidDir + link_list[index] + ".webm";  
+    source[0].src = vidDir + link_list[index] + ".mp4";
+      currentVid = index;
+      video.load();
+    video.play();
+  }
+
+  for (var i=0; i<lnkNum; i++) {
+  var filename = allLnks[i].href;
+  link_list[i] = filename.match(/([^\/]+)(?=\.\w+$)/)[0];
+  (function(index){
+          allLnks[i].onclick = function(i){
+          i.preventDefault();  
+      for (var i=0; i<lnkNum; i++) {
+      allLnks[i].classList.remove("currentvid");
+      }
+      playVid(index);
+          }    
+      })(i);
+  }
+  video.addEventListener('ended', function () {
+      allLnks[currentVid].classList.remove("currentvid");
+      if ((currentVid + 1) >= lnkNum) { nextVid = 0 } else { nextVid = currentVid+1 }
+      playVid(nextVid);
+  })
+
+  video.addEventListener('mouseenter', function() {
+      video.setAttribute("controls","true");
+  })
+
+  video.addEventListener('mouseleave', function() {
+      video.removeAttribute("controls");
+  })
+
+  var indexOf = function(needle) {
+      if(typeof Array.prototype.indexOf === 'function') {
+          indexOf = Array.prototype.indexOf;
+      } else {
+          indexOf = function(needle) {
+              var i = -1, index = -1;
+        for(i = 0; i < this.length; i++) {
+                  if(this[i] === needle) {
+                      index = i;
+                      break;
+                  }}
+              return index;
+          };}
+      return indexOf.call(this, needle);
+  };
+    var focusedLink = document.activeElement;
+    index = indexOf.call(allLnks, focusedLink);
+    
+  document.addEventListener('keydown', function(e) {
+  if (index) {
+    var focusedElement = document.activeElement;
+      if (e.keyCode == 40 || e.keyCode == 39) { // down or right cursor
+      var nextNode = focusedElement.nextElementSibling;
+      if (nextNode) { nextNode.focus(); } else { video_links.firstElementChild.focus(); }
+      }
+     if (e.keyCode == 38 || e.keyCode == 37) { // up or left cursor
+      var previousNode = focusedElement.previousElementSibling;
+      if (previousNode) { previousNode.focus(); } else { video_links.lastElementChild.focus(); }
+      }
+   }
+  });
+   
+};
+</script>
+
+
+<script>
+
+function readTextFile(file)
+{
+    var rawFile = new XMLHttpRequest();
+    rawFile.open("GET", file, false);
+    rawFile.onreadystatechange = function ()
+    {
+        if(rawFile.readyState === 4)
+        {
+            if(rawFile.status === 200 || rawFile.status == 0)
+            {
+                text=rawFile.responseText;
+                $.each(text.split(/[\n\r]+/), function(index, line) {
+                  
+                    innerHtml = "<div class=\"theHref\">\n";
+                    innerHtml += "<a href=\""+ line + "\">\n";
+                    innerHtml += "<img src=\"http://thenewcode.com/assets/images/vid-glacier.jpg\"\n>";
+                    innerHtml += "</a>\n";
+                    innerHtml += "</div>\n";
+                    $('.fig').append(innerHtml)
+                });
+                
+            }
+        }
+    }
+    rawFile.send(null);
+    doit();
+}
+
+readTextFile("text.txt");
+</script>
